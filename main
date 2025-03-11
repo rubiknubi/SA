@@ -1,0 +1,141 @@
+import tkinter as tk
+from tkinter import messagebox
+import csv
+import datetime
+
+class Meal:
+    def __init__(self, name, calories, protein, carbs, fats):
+        self.name = name
+        self.calories = float(calories)
+        self.protein = float(protein)
+        self.carbs = float(carbs)
+        self.fats = float(fats)
+
+class FoodDiary:
+    def __init__(self):
+        self.meals = []
+        self.total_calories = 0
+        self.total_protein = 0
+        self.total_carbs = 0
+        self.total_fats = 0
+
+    def add_meal(self, meal):
+        self.meals.append(meal)
+        self.total_calories += meal.calories
+        self.total_protein += meal.protein
+        self.total_carbs += meal.carbs
+        self.total_fats += meal.fats
+
+    def save_to_file(self, filename="food_diary.csv"):
+        with open(filename, mode='a', newline='') as file:
+            writer = csv.writer(file)
+            for meal in self.meals:
+                writer.writerow([meal.name, meal.calories, meal.protein, meal.carbs, meal.fats])
+
+    def clear(self):
+        self.meals = []
+        self.total_calories = 0
+        self.total_protein = 0
+        self.total_carbs = 0
+        self.total_fats = 0
+
+class FoodDiaryApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Дневник питания")
+        self.food_diary = FoodDiary()
+
+        self.name_label = tk.Label(root, text="Название пищи:")
+        self.name_label.pack()
+        self.name_entry = tk.Entry(root)
+        self.name_entry.pack()
+
+        self.calories_label = tk.Label(root, text="Калории:")
+        self.calories_label.pack()
+        self.calories_entry = tk.Entry(root)
+        self.calories_entry.pack()
+
+        self.protein_label = tk.Label(root, text="Белки:")
+        self.protein_label.pack()
+        self.protein_entry = tk.Entry(root)
+        self.protein_entry.pack()
+
+        self.carbs_label = tk.Label(root, text="Углеводы:")
+        self.carbs_label.pack()
+        self.carbs_entry = tk.Entry(root)
+        self.carbs_entry.pack()
+
+        self.fats_label = tk.Label(root, text="Жиры:")
+        self.fats_label.pack()
+        self.fats_entry = tk.Entry(root)
+        self.fats_entry.pack()
+
+        self.add_button = tk.Button(root, text="Добавить прием пищи", command=self.add_meal)
+        self.add_button.pack()
+
+        self.summary_label = tk.Label(root, text="Общая информация:")
+        self.summary_label.pack()
+
+        self.total_calories_label = tk.Label(root, text="Калории: 0")
+        self.total_calories_label.pack()
+
+        self.total_protein_label = tk.Label(root, text="Белки: 0")
+        self.total_protein_label.pack()
+
+        self.total_carbs_label = tk.Label(root, text="Углеводы: 0")
+        self.total_carbs_label.pack()
+
+        self.total_fats_label = tk.Label(root, text="Жиры: 0")
+        self.total_fats_label.pack()
+
+        self.save_button = tk.Button(root, text="Сохранить", command=self.save_diary)
+        self.save_button.pack()
+
+        self.clear_button = tk.Button(root, text="Очистить", command=self.clear_diary)
+        self.clear_button.pack()
+
+    def add_meal(self):
+        try:
+            name = self.name_entry.get()
+            calories = self.calories_entry.get()
+            protein = self.protein_entry.get()
+            carbs = self.carbs_entry.get()
+            fats = self.fats_entry.get()
+
+            if not name or not calories or not protein or not carbs or not fats:
+                raise ValueError("Все поля должны быть заполнены")
+
+            meal = Meal(name, calories, protein, fats, carbs)
+            self.food_diary.add_meal(meal)
+            self.update_summary()
+
+            self.name_entry.delete(0, tk.END)
+            self.calories_entry.delete(0, tk.END)
+            self.protein_entry.delete(0, tk.END)
+            self.carbs_entry.delete(0, tk.END)
+            self.fats_entry.delete(0, tk.END)
+        except ValueError as e:
+            messagebox.showerror("Ошибка", str(e))
+
+    def update_summary(self):
+        self.total_calories_label.config(text=f"Калории: {self.food_diary.total_calories}")
+        self.total_protein_label.config(text=f"Белки: {self.food_diary.total_protein}")
+        self.total_carbs_label.config(text=f"Углеводы: {self.food_diary.total_carbs}")
+        self.total_fats_label.config(text=f"Жиры: {self.food_diary.total_fats}")
+
+    def save_diary(self):
+        try:
+            self.food_diary.save_to_file()
+            messagebox.showinfo("Успех", "Дневник питания сохранен")
+        except Exception as e:
+            messagebox.showerror("Ошибка", str(e))
+
+    def clear_diary(self):
+        self.food_diary.clear()
+        self.update_summary()
+        messagebox.showinfo("Информация", "Дневник питания очищен")
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = FoodDiaryApp(root)
+    root.mainloop()
